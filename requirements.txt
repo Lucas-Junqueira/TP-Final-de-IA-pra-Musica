@@ -1,0 +1,9 @@
+torch
+miditok
+muspy
+pretty_midi
+numpy
+scipy
+matplotlib
+pyyaml
+pytest
