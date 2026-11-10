@@ -13,7 +13,8 @@
 \documentclass{article}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
-\usepackage[submission]{ismir} % Remove the "submission" option for camera-ready version
+% \usepackage[submission]{ismir} % Remove the "submission" option for camera-ready version
+\usepackage{ismir}
 \usepackage{amsmath,cite,url}
 \usepackage{graphicx}
 \usepackage{color}
@@ -28,9 +29,9 @@
 % Single address
 % To use with only one author or several with the same address
 % ---------------
-\oneauthor
-  {Anonymous Authors}
-  {Anonymous Affiliations\\\texttt{anonymous@ismir.net}}
+%\oneauthor
+%  {Anonymous Authors}
+%  {Anonymous Affiliations\\\texttt{anonymous@ismir.net}}
 
 % Two addresses
 % --------------
@@ -56,10 +57,18 @@
 %   $^3$ Company, Address\\
 %   {\tt\small CorrespondenceAuthor@ismir.edu, PossibleOtherAuthor@ismir.edu}
 %   }
+\multauthor
+  {Cecilia J. V. M. Pereira \hspace{1cm} Daniel Barreto Torres}
+  {{\bf Erick Soares de Souza \hspace{1cm} Felipe Lopes Gomide}\\
+  {\bf Leonardo Romano Andrade \hspace{1cm} Lucas Junqueira Carvalhido}\\
+  Universidade Federal de Minas Gerais, Brazil\\
+  {\tt\small ceciliajunq@ufmg.br, daniboybt@ufmg.br, ericksoares@ufmg.br,}\\
+  {\tt\small fgomide@ufmg.br, leo-romano@ufmg.br, lucasjc@ufmg.br}
+  }
 
 % For the author list in the Creative Common license, please enter author names.
 % Please abbreviate the first names of authors and add 'and' between the second to last and last authors.
-\def\authorname{F. Author, S. Author, and T. Author}
+\def\authorname{C. Pereira, D. Torres, E. Souza, F. Gomide, L. Andrade, and L. Carvalhido}
 
 % Optional: To use hyperref, uncomment the following.
 % \usepackage[bookmarks=false,pdfauthor={\authorname},pdfsubject={\pdfsubject},hidelinks]{hyperref}
