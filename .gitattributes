@@ -1,0 +1,13 @@
+# Normalize line endings to LF on all operating systems
+* text=auto eol=lf
+
+# Binary files
+*.pdf binary
+*.png binary
+*.jpg binary
+*.mid binary
+*.midi binary
+*.wav binary
+*.pt binary
+*.pth binary
+*.ckpt binary

@@ -1,0 +1,38 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# Virtual environments and environment variables
+.venv/
+venv/
+.env
+
+# Tool caches
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Packaging
+build/
+dist/
+*.egg-info/
+
+# IDE and OS files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Model checkpoints
+*.pt
+*.pth
+*.ckpt
+
+# Latex intermediate files
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+*.log
+*.out
