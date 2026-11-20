@@ -285,3 +285,67 @@ def emotion_report(y_true: Sequence[int], y_pred: Sequence[int]) -> dict:
 def evaluate_sequences(model, sequences, special: SpecialIds) -> dict:
     y_true = [quadrant_index(s, special) for s in sequences]
     return emotion_report(y_true, predict(model, sequences, special))
+
+
+# ---------------------------------------------------------------------------
+# Linha de comando: treina no treino do EMOPIA+, escolhe pela validação, teto no teste
+# ---------------------------------------------------------------------------
+
+
+def _report(model, seqs, special, target) -> dict:
+    if target == "quadrant":
+        return evaluate_sequences(model, seqs, special)
+    y_true = [to_target(quadrant_index(s, special), target) for s in seqs]
+    y_pred = predict(model, seqs, special)
+    return {"n": len(seqs), f"acc_{target}": sum(t == p for t, p in zip(y_true, y_pred)) / len(seqs)}
+
+
+def main() -> None:
+    import argparse
+    import json
+    from pathlib import Path
+
+    from src.dataset import PitchShifter, load_split
+    from src.tokenize import build_tokenizer, special_ids
+
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--target", choices=TARGETS, default="quadrant")
+    ap.add_argument("--out", type=Path, default=None, help="padrão: runs/classifier_<target>")
+    ap.add_argument("--epochs", type=int, default=100)
+    ap.add_argument("--patience", type=int, default=15)
+    ap.add_argument("--batch-size", type=int, default=32)
+    ap.add_argument("--lr", type=float, default=3e-4)
+    ap.add_argument("--max-len", type=int, default=512)
+    ap.add_argument("--d-model", type=int, default=256)
+    ap.add_argument("--layers", type=int, default=4)
+    ap.add_argument("--no-augment", action="store_true")
+    ap.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
+    ap.add_argument("--seed", type=int, default=0)
+    args = ap.parse_args()
+
+    out = args.out or Path(f"runs/classifier_{args.target}")
+    out.mkdir(parents=True, exist_ok=True)
+    tok = build_tokenizer()
+    sp = special_ids(tok)
+    seqs = {s: [p["ids"].tolist() for p in load_split("emopia", s)] for s in ("train", "val", "test")}
+
+    torch.manual_seed(args.seed)
+    model = EmotionClassifier(ClassifierConfig(
+        vocab_size=len(tok), pad_id=sp.pad, n_classes=4 if args.target == "quadrant" else 2,
+        n_layers=args.layers, d_model=args.d_model, max_len=args.max_len)).to(args.device)
+    augment = None if args.no_augment else PitchShifter(tok.vocab).random_transpose
+    history = train_classifier(model, seqs["train"], seqs["val"], sp, target=args.target,
+                               epochs=args.epochs, batch_size=args.batch_size, lr=args.lr,
+                               patience=args.patience, augment=augment, seed=args.seed)
+    save_classifier(model, out / "classifier.pt", args.target)
+
+    # acurácia no teste humano = teto da avaliação
+    report = {"target": args.target, "val": _report(model, seqs["val"], sp, args.target),
+              "test": _report(model, seqs["test"], sp, args.target), "history": history}
+    with open(out / "report.json", "w") as f:
+        json.dump(report, f, indent=2)
+    print(json.dumps({k: report[k] for k in ("val", "test")}, indent=2))
+
+
+if __name__ == "__main__":
+    main()

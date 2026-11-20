@@ -1,0 +1,25 @@
+# LSTM, fase 1: mesmo protocolo do Transformer (pré-treino no Pop1k7)
+out_dir: runs/lstm_pretrain
+model:
+  type: lstm
+  n_layers: 2
+  hidden: 512
+  d_embed: 512
+  dropout: 0.1
+data:
+  dataset: pop1k7
+  max_len: 1024       # tamanho das janelas (a LSTM não tem limite de contexto)
+  batch_size: 16
+  max_shift: 3
+  num_workers: 0   # workers no Windows custam ~0,5-1 GB de RAM cada
+train:
+  lr: 3.0e-4
+  weight_decay: 0.01
+  warmup_steps: 1000
+  min_lr_ratio: 0.1
+  max_steps: 20000
+  grad_clip: 1.0
+  eval_every: 1000
+  patience: 5
+  amp: true
+  seed: 0

@@ -1,0 +1,26 @@
+# Fase 1: pré-treino no Pop1k7 (emoção sempre <NULL>)
+out_dir: runs/transformer_pretrain
+model:
+  type: transformer
+  n_layers: 6
+  d_model: 256        # plano: 256 a 512
+  n_heads: 8
+  ff_mult: 4
+  max_len: 1024       # plano B se ficar lento: 512
+  dropout: 0.1
+data:
+  dataset: pop1k7
+  batch_size: 16
+  max_shift: 3        # transposição de -3 a +3
+  num_workers: 0   # workers no Windows custam ~0,5-1 GB de RAM cada
+train:
+  lr: 3.0e-4
+  weight_decay: 0.01
+  warmup_steps: 1000
+  min_lr_ratio: 0.1   # decaimento cosseno até 10% do lr
+  max_steps: 20000    # ~35 épocas de 578 passos
+  grad_clip: 1.0
+  eval_every: 1000
+  patience: 5         # para quando a validação estabiliza
+  amp: true
+  seed: 0

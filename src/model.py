@@ -81,6 +81,46 @@ class MusicTransformer(nn.Module):
         x = self.blocks(x, mask=causal, is_causal=True)
         return self.head(self.norm(x))
 
+    @torch.no_grad()
+    def step(self, tokens: torch.Tensor, cache: list | None = None, start: int = 0):
+        """Forward incremental com cache de chaves/valores (só inferência).
+
+        tokens (B, t) ocupam as posições start..start+t-1. O cache (lista de buffers (K, V)
+        por camada, alocados uma vez no tamanho do contexto) é escrito no lugar, sem cópias;
+        cache=None aloca. start=0 refaz o prefill reaproveitando os buffers.
+        Reusa os pesos das camadas nn.TransformerEncoderLayer (pré-LN, eval).
+        """
+        B, t = tokens.shape
+        end = start + t
+        if end > self.cfg.max_len:
+            raise ValueError("cache excede o contexto; refaça o prefill com uma janela menor")
+        H = self.cfg.n_heads
+        Dh = self.cfg.d_model // H
+        if cache is None:
+            shape = (B, H, self.cfg.max_len, Dh)
+            cache = [(self.tok_emb.weight.new_empty(shape), self.tok_emb.weight.new_empty(shape))
+                     for _ in self.blocks.layers]
+        pos = torch.arange(start, end, device=tokens.device)
+        x = self.tok_emb(tokens) + self.pos_emb(pos)
+        for (K, V), layer in zip(cache, self.blocks.layers):
+            attn = layer.self_attn
+            h = layer.norm1(x)
+            q, k, v = F.linear(h, attn.in_proj_weight, attn.in_proj_bias).chunk(3, dim=-1)
+            q, k, v = (z.view(B, t, H, Dh).transpose(1, 2) for z in (q, k, v))
+            K[:, :, start:end] = k
+            V[:, :, start:end] = v
+            k, v = K[:, :, :end], V[:, :, :end]
+            if start == 0:
+                a = F.scaled_dot_product_attention(q, k, v, is_causal=True)
+            elif t == 1:
+                a = F.scaled_dot_product_attention(q, k, v)
+            else:
+                allowed = torch.ones(t, end, dtype=torch.bool, device=x.device).tril(diagonal=start)
+                a = F.scaled_dot_product_attention(q, k, v, attn_mask=allowed)
+            x = x + attn.out_proj(a.transpose(1, 2).reshape(B, t, -1))
+            x = x + layer.linear2(layer.activation(layer.linear1(layer.norm2(x))))
+        return self.head(self.norm(x)), cache
+
 
 # ---------------------------------------------------------------------------
 # LSTM (baseline)

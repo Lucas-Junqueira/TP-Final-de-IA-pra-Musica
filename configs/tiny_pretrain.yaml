@@ -1,0 +1,23 @@
+# Rodada mínima (plano: 2 camadas, ~5 min) para testar o pipeline inteiro
+out_dir: runs/tiny_pretrain
+model:
+  type: transformer
+  n_layers: 2
+  d_model: 128
+  n_heads: 4
+  ff_mult: 4
+  max_len: 256
+  dropout: 0.1
+data:
+  dataset: pop1k7
+  batch_size: 16
+  max_shift: 3
+  num_workers: 0
+train:
+  lr: 1.0e-3
+  warmup_steps: 50
+  max_steps: 300
+  eval_every: 100
+  log_every: 25
+  amp: true
+  seed: 0
