@@ -1,0 +1,27 @@
+# LSTM, fase 2: ajuste fino no EMOPIA+
+out_dir: runs/lstm_finetune
+model:
+  type: lstm
+  n_layers: 2
+  hidden: 512
+  d_embed: 512
+  dropout: 0.1
+data:
+  dataset: emopia
+  max_len: 1024
+  batch_size: 16
+  cond_dropout: 0.15
+  max_shift: 3
+  num_workers: 0   # workers no Windows custam ~0,5-1 GB de RAM cada
+train:
+  init_from: runs/lstm_pretrain/best.pt
+  lr: 1.0e-4
+  weight_decay: 0.01
+  warmup_steps: 200
+  min_lr_ratio: 0.1
+  max_steps: 5000
+  grad_clip: 1.0
+  eval_every: 200
+  patience: 5
+  amp: true
+  seed: 0

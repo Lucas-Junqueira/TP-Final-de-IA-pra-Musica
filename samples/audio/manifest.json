@@ -1,0 +1,242 @@
+[
+ {
+  "system": "transformer_g5",
+  "quadrant": "Q1",
+  "index": 0,
+  "file": "samples/audio/transformer_g5/Q1_000.flac"
+ },
+ {
+  "system": "transformer_g5",
+  "quadrant": "Q1",
+  "index": 1,
+  "file": "samples/audio/transformer_g5/Q1_001.flac"
+ },
+ {
+  "system": "transformer_g5",
+  "quadrant": "Q2",
+  "index": 0,
+  "file": "samples/audio/transformer_g5/Q2_000.flac"
+ },
+ {
+  "system": "transformer_g5",
+  "quadrant": "Q2",
+  "index": 1,
+  "file": "samples/audio/transformer_g5/Q2_001.flac"
+ },
+ {
+  "system": "transformer_g5",
+  "quadrant": "Q3",
+  "index": 0,
+  "file": "samples/audio/transformer_g5/Q3_000.flac"
+ },
+ {
+  "system": "transformer_g5",
+  "quadrant": "Q3",
+  "index": 1,
+  "file": "samples/audio/transformer_g5/Q3_001.flac"
+ },
+ {
+  "system": "transformer_g5",
+  "quadrant": "Q4",
+  "index": 0,
+  "file": "samples/audio/transformer_g5/Q4_000.flac"
+ },
+ {
+  "system": "transformer_g5",
+  "quadrant": "Q4",
+  "index": 1,
+  "file": "samples/audio/transformer_g5/Q4_001.flac"
+ },
+ {
+  "system": "transformer_g1",
+  "quadrant": "Q1",
+  "index": 0,
+  "file": "samples/audio/transformer_g1/Q1_000.flac"
+ },
+ {
+  "system": "transformer_g1",
+  "quadrant": "Q1",
+  "index": 1,
+  "file": "samples/audio/transformer_g1/Q1_001.flac"
+ },
+ {
+  "system": "transformer_g1",
+  "quadrant": "Q2",
+  "index": 0,
+  "file": "samples/audio/transformer_g1/Q2_000.flac"
+ },
+ {
+  "system": "transformer_g1",
+  "quadrant": "Q2",
+  "index": 1,
+  "file": "samples/audio/transformer_g1/Q2_001.flac"
+ },
+ {
+  "system": "transformer_g1",
+  "quadrant": "Q3",
+  "index": 0,
+  "file": "samples/audio/transformer_g1/Q3_000.flac"
+ },
+ {
+  "system": "transformer_g1",
+  "quadrant": "Q3",
+  "index": 1,
+  "file": "samples/audio/transformer_g1/Q3_001.flac"
+ },
+ {
+  "system": "transformer_g1",
+  "quadrant": "Q4",
+  "index": 0,
+  "file": "samples/audio/transformer_g1/Q4_000.flac"
+ },
+ {
+  "system": "transformer_g1",
+  "quadrant": "Q4",
+  "index": 1,
+  "file": "samples/audio/transformer_g1/Q4_001.flac"
+ },
+ {
+  "system": "markov",
+  "quadrant": "Q1",
+  "index": 0,
+  "file": "samples/audio/markov/Q1_000.flac"
+ },
+ {
+  "system": "markov",
+  "quadrant": "Q1",
+  "index": 1,
+  "file": "samples/audio/markov/Q1_001.flac"
+ },
+ {
+  "system": "markov",
+  "quadrant": "Q2",
+  "index": 0,
+  "file": "samples/audio/markov/Q2_000.flac"
+ },
+ {
+  "system": "markov",
+  "quadrant": "Q2",
+  "index": 1,
+  "file": "samples/audio/markov/Q2_001.flac"
+ },
+ {
+  "system": "markov",
+  "quadrant": "Q3",
+  "index": 0,
+  "file": "samples/audio/markov/Q3_000.flac"
+ },
+ {
+  "system": "markov",
+  "quadrant": "Q3",
+  "index": 1,
+  "file": "samples/audio/markov/Q3_001.flac"
+ },
+ {
+  "system": "markov",
+  "quadrant": "Q4",
+  "index": 0,
+  "file": "samples/audio/markov/Q4_000.flac"
+ },
+ {
+  "system": "markov",
+  "quadrant": "Q4",
+  "index": 1,
+  "file": "samples/audio/markov/Q4_001.flac"
+ },
+ {
+  "system": "lstm",
+  "quadrant": "Q1",
+  "index": 0,
+  "file": "samples/audio/lstm/Q1_000.flac"
+ },
+ {
+  "system": "lstm",
+  "quadrant": "Q1",
+  "index": 1,
+  "file": "samples/audio/lstm/Q1_001.flac"
+ },
+ {
+  "system": "lstm",
+  "quadrant": "Q2",
+  "index": 0,
+  "file": "samples/audio/lstm/Q2_000.flac"
+ },
+ {
+  "system": "lstm",
+  "quadrant": "Q2",
+  "index": 1,
+  "file": "samples/audio/lstm/Q2_001.flac"
+ },
+ {
+  "system": "lstm",
+  "quadrant": "Q3",
+  "index": 0,
+  "file": "samples/audio/lstm/Q3_000.flac"
+ },
+ {
+  "system": "lstm",
+  "quadrant": "Q3",
+  "index": 1,
+  "file": "samples/audio/lstm/Q3_001.flac"
+ },
+ {
+  "system": "lstm",
+  "quadrant": "Q4",
+  "index": 0,
+  "file": "samples/audio/lstm/Q4_000.flac"
+ },
+ {
+  "system": "lstm",
+  "quadrant": "Q4",
+  "index": 1,
+  "file": "samples/audio/lstm/Q4_001.flac"
+ },
+ {
+  "system": "human",
+  "quadrant": "Q3",
+  "index": 0,
+  "file": "samples/audio/human/Q3_000.flac"
+ },
+ {
+  "system": "human",
+  "quadrant": "Q3",
+  "index": 1,
+  "file": "samples/audio/human/Q3_001.flac"
+ },
+ {
+  "system": "human",
+  "quadrant": "Q1",
+  "index": 0,
+  "file": "samples/audio/human/Q1_000.flac"
+ },
+ {
+  "system": "human",
+  "quadrant": "Q1",
+  "index": 1,
+  "file": "samples/audio/human/Q1_001.flac"
+ },
+ {
+  "system": "human",
+  "quadrant": "Q2",
+  "index": 0,
+  "file": "samples/audio/human/Q2_000.flac"
+ },
+ {
+  "system": "human",
+  "quadrant": "Q4",
+  "index": 0,
+  "file": "samples/audio/human/Q4_000.flac"
+ },
+ {
+  "system": "human",
+  "quadrant": "Q4",
+  "index": 1,
+  "file": "samples/audio/human/Q4_001.flac"
+ },
+ {
+  "system": "human",
+  "quadrant": "Q2",
+  "index": 1,
+  "file": "samples/audio/human/Q2_001.flac"
+ }
+]

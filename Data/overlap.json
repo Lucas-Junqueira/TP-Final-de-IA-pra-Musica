@@ -1,0 +1,154 @@
+[
+  {
+    "emopia_split": "train",
+    "emopia_clip": "Q2_D-gDPh9ZpFk_0.mid",
+    "emopia_song": "D-gDPh9ZpFk",
+    "pop1k7": "src_001/93.mid",
+    "gravacao": 0.249,
+    "melodia": 0.08
+  },
+  {
+    "emopia_split": "train",
+    "emopia_clip": "Q2_D5kyjnlDNZs_1.mid",
+    "emopia_song": "D5kyjnlDNZs",
+    "pop1k7": "src_001/92.mid",
+    "gravacao": 0.231,
+    "melodia": 0.394
+  },
+  {
+    "emopia_split": "train",
+    "emopia_clip": "Q2_D-gDPh9ZpFk_2.mid",
+    "emopia_song": "D-gDPh9ZpFk",
+    "pop1k7": "src_001/93.mid",
+    "gravacao": 0.209,
+    "melodia": 0.17
+  },
+  {
+    "emopia_split": "train",
+    "emopia_clip": "Q2_1EDThWjNxOI_0.mid",
+    "emopia_song": "1EDThWjNxOI",
+    "pop1k7": "src_002/414.mid",
+    "gravacao": 0.176,
+    "melodia": 0.132
+  },
+  {
+    "emopia_split": "train",
+    "emopia_clip": "Q2_1EDThWjNxOI_1.mid",
+    "emopia_song": "1EDThWjNxOI",
+    "pop1k7": "src_002/414.mid",
+    "gravacao": 0.159,
+    "melodia": 0.016
+  },
+  {
+    "emopia_split": "train",
+    "emopia_clip": "Q1_dfNdpy8TUzA_2.mid",
+    "emopia_song": "dfNdpy8TUzA",
+    "pop1k7": "src_002/298.mid",
+    "gravacao": 0.129,
+    "melodia": 0.064
+  },
+  {
+    "emopia_split": "test",
+    "emopia_clip": "Q4_xrhWli_R98g_0.mid",
+    "emopia_song": "xrhWli_R98g",
+    "pop1k7": "src_002/279.mid",
+    "gravacao": 0.128,
+    "melodia": 0.213
+  },
+  {
+    "emopia_split": "train",
+    "emopia_clip": "Q2_sEQf5lcnj_o_3.mid",
+    "emopia_song": "sEQf5lcnj_o",
+    "pop1k7": "src_001/99.mid",
+    "gravacao": 0.125,
+    "melodia": 0.152
+  },
+  {
+    "emopia_split": "train",
+    "emopia_clip": "Q1_dfNdpy8TUzA_0.mid",
+    "emopia_song": "dfNdpy8TUzA",
+    "pop1k7": "src_002/298.mid",
+    "gravacao": 0.12,
+    "melodia": 0.035
+  },
+  {
+    "emopia_split": "test",
+    "emopia_clip": "Q1_xrhWli_R98g_1.mid",
+    "emopia_song": "xrhWli_R98g",
+    "pop1k7": "src_002/279.mid",
+    "gravacao": 0.109,
+    "melodia": 0.356
+  },
+  {
+    "emopia_split": "train",
+    "emopia_clip": "Q1_Y5JcZQ0xg4Y_0.mid",
+    "emopia_song": "Y5JcZQ0xg4Y",
+    "pop1k7": "src_002/273.mid",
+    "gravacao": 0.088,
+    "melodia": 0.222
+  },
+  {
+    "emopia_split": "train",
+    "emopia_clip": "Q1_Y5JcZQ0xg4Y_3.mid",
+    "emopia_song": "Y5JcZQ0xg4Y",
+    "pop1k7": "src_002/294.mid",
+    "gravacao": 0.067,
+    "melodia": 0.487
+  },
+  {
+    "emopia_split": "train",
+    "emopia_clip": "Q1_Y5JcZQ0xg4Y_2.mid",
+    "emopia_song": "Y5JcZQ0xg4Y",
+    "pop1k7": "src_002/294.mid",
+    "gravacao": 0.062,
+    "melodia": 0.567
+  },
+  {
+    "emopia_split": "train",
+    "emopia_clip": "Q1_vv6nrZ2myXw_0.mid",
+    "emopia_song": "vv6nrZ2myXw",
+    "pop1k7": "src_002/360.mid",
+    "gravacao": 0.06,
+    "melodia": 0.193
+  },
+  {
+    "emopia_split": "train",
+    "emopia_clip": "Q1_Y5JcZQ0xg4Y_1.mid",
+    "emopia_song": "Y5JcZQ0xg4Y",
+    "pop1k7": "src_002/273.mid",
+    "gravacao": 0.045,
+    "melodia": 0.214
+  },
+  {
+    "emopia_split": "train",
+    "emopia_clip": "Q1_Y5JcZQ0xg4Y_1.mid",
+    "emopia_song": "Y5JcZQ0xg4Y",
+    "pop1k7": "src_002/294.mid",
+    "gravacao": 0.045,
+    "melodia": 0.155
+  },
+  {
+    "emopia_split": "train",
+    "emopia_clip": "Q1_Y5JcZQ0xg4Y_2.mid",
+    "emopia_song": "Y5JcZQ0xg4Y",
+    "pop1k7": "src_002/273.mid",
+    "gravacao": 0.044,
+    "melodia": 0.317
+  },
+  {
+    "emopia_split": "val",
+    "emopia_clip": "Q1_zHwJG8Rrx6c_3.mid",
+    "emopia_song": "zHwJG8Rrx6c",
+    "pop1k7": "src_002/367.mid",
+    "gravacao": 0.038,
+    "melodia": 0.182
+  },
+  {
+    "emopia_split": "train",
+    "emopia_clip": "Q1_Y5JcZQ0xg4Y_0.mid",
+    "emopia_song": "Y5JcZQ0xg4Y",
+    "pop1k7": "src_002/294.mid",
+    "gravacao": 0.029,
+    "melodia": 0.296
+  }
+]

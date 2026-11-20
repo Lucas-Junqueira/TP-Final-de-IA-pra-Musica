@@ -1,0 +1,26 @@
+# Rodada mínima, fase 2
+out_dir: runs/tiny_finetune
+model:
+  type: transformer
+  n_layers: 2
+  d_model: 128
+  n_heads: 4
+  ff_mult: 4
+  max_len: 256
+  dropout: 0.1
+data:
+  dataset: emopia
+  batch_size: 16
+  cond_dropout: 0.15
+  max_shift: 3
+  num_workers: 0
+train:
+  init_from: runs/tiny_pretrain/best.pt
+  lr: 3.0e-4
+  warmup_steps: 20
+  max_steps: 200
+  eval_every: 50
+  log_every: 25
+  patience: 3
+  amp: true
+  seed: 0
