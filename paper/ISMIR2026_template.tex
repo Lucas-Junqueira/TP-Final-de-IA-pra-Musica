@@ -1,62 +1,32 @@
 % -----------------------------------------------
-% Template for ISMIR Papers
-% 2026 version, based on previous ISMIR templates
+% DCC831 - TP Final: Geração de Piano Pop Condicionada por Emoção com
+%                    Classifier-Free Guidance. UFMG 2026/2
 
 % Requirements :
 % * 6+n page length maximum
 % * 10MB maximum file size
 % * Copyright note must appear in the bottom left corner of first page
-% * Clearer statement about citing own work in anonymized submission
 % (see conference website for additional details)
 % -----------------------------------------------
 
 \documentclass{article}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
-% \usepackage[submission]{ismir} % Remove the "submission" option for camera-ready version
+\usepackage[brazilian]{babel}
 \usepackage{ismir}
 \usepackage{amsmath,cite,url}
 \usepackage{graphicx}
 \usepackage{color}
 
+\graphicspath{{../results/figures/}}
+
 % Title. Please use IEEE-compliant title case when specifying the title here,
 % as it has implications for the copyright notice
 % ------
-\title{Paper Template for ISMIR \conferenceyear}
+\title{Geração de Piano Pop Condicionada por Emoção com Classifier-Free Guidance}
 
 % Note: Please do NOT use \thanks or a \footnote in any of the author markup
 
-% Single address
-% To use with only one author or several with the same address
-% ---------------
-%\oneauthor
-%  {Anonymous Authors}
-%  {Anonymous Affiliations\\\texttt{anonymous@ismir.net}}
-
-% Two addresses
-% --------------
-%\twoauthors
-%   {First author} {School \\ Department}
-%   {Second author} {Company \\ Address}
-
-% Three addresses
-% --------------
-% \threeauthors
-%   {First Author} {Affiliation 1 \\ \texttt{author1@ismir.edu}}
-%   {Second Author} {Affiliation 2 \\ \texttt{author2@ismir.edu}}
-%   {Third Author} {Affiliation 3 \\ \texttt{author3@ismir.edu}}
-
-% Four or more addresses
-% OR alternative format for large number of co-authors
-% ------------
-% \multauthor
-%   {First author$^1$ \hspace{1cm} Second author$^1$ \hspace{1cm} Third author$^2$}
-%   {{\bf Fourth author$^3$ \hspace{1cm} Fifth author$^2$ \hspace{1cm} Sixth author$^1$}\\
-%   $^1$ Department of Computer Science, University, Country\\
-%   $^2$ International Laboratories, City, Country\\
-%   $^3$ Company, Address\\
-%   {\tt\small CorrespondenceAuthor@ismir.edu, PossibleOtherAuthor@ismir.edu}
-%   }
 \multauthor
   {Cecilia J. V. M. Pereira \hspace{1cm} Daniel Barreto Torres}
   {{\bf Erick Soares de Souza \hspace{1cm} Felipe Lopes Gomide}\\
@@ -70,8 +40,25 @@
 % Please abbreviate the first names of authors and add 'and' between the second to last and last authors.
 \def\authorname{C. Pereira, D. Torres, E. Souza, F. Gomide, L. Andrade, and L. Carvalhido}
 
+% ismir.sty fixa "ABSTRACT" em inglês; mantém o resumo em português (como no TP1)
+\renewcommand{\abstract}{\begin{center}\bf RESUMO\end{center}}
+\renewcommand{\tablename}{Tabela}
+\renewcommand{\figurename}{Figura}
+% ismir.sty fixa "References" em inglês; mesma definição, com o título em português
+\def\thebibliography#1{
+  \section{Referências}\list
+  {[\arabic{enumi}]}{
+  \settowidth\labelwidth{[#1]}\leftmargin 1em
+  \advance\leftmargin\labelsep
+  \usecounter{enumi}
+  }
+  \def\newblock{\hskip .01em plus .01em minus .01em}
+  \sloppy\clubpenalty4000\widowpenalty4000
+  \sfcode`\.=1000\relax
+}
+
 % Optional: To use hyperref, uncomment the following.
-% \usepackage[bookmarks=false,pdfauthor={\authorname},pdfsubject={\pdfsubject},hidelinks]{hyperref}
+\usepackage[bookmarks=false,pdfauthor={\authorname},pdfsubject={\pdfsubject},hidelinks]{hyperref}
 % Mind the bookmarks=false option; bookmarks are incompatible with ismir.sty.
 
 \sloppy % please retain sloppy command for improved formatting
@@ -81,149 +68,183 @@
 \maketitle
 
 \begin{abstract}
-The abstract should be placed at the top left column and should contain about 150--200 words.
+  Este trabalho investiga a geração de trechos de piano pop condicionados a um
+  dos quatro quadrantes emocionais do modelo de Russell. Um Transformer decoder
+  é pré-treinado no Pop1k7 e ajustado no EMOPIA+ com um token de emoção que,
+  durante o ajuste fino, é trocado aleatoriamente por um token nulo, o que
+  permite aplicar \emph{classifier-free guidance} (CFG) apenas na amostragem,
+  sem retreinar o modelo. O sistema é comparado a uma LSTM e a uma cadeia de
+  Markov quanto à aderência à emoção, à qualidade e à diversidade. Os resultados
+  mostram que o CFG aumenta bastante a aderência sem perda de qualidade. O
+  ganho, no entanto, vem quase todo do arousal, enquanto a valência praticamente
+  não muda, pois o modo maior ou menor das peças geradas não distingue os
+  quadrantes. O código está disponível em
+  \url{https://github.com/Lucas-Junqueira/TP-Final-de-IA-pra-Musica}.
 \end{abstract}
 
-\section{Introduction}\label{sec:introduction}
+% -----------------------------------------------
+\section{Introdução}\label{sec:intro}
 
-This template includes all the information about formatting manuscripts for the ISMIR \conferenceyear\ Conference. Please follow these guidelines to give the final proceedings a uniform look. Most of the required formatting is achieved automatically by using the supplied style file (\LaTeX) or template (Word). If you have any questions, please contact the Program Committee (\texttt{ismir\conferenceyear-papers@ismir.net}). This template can be downloaded from the ISMIR \conferenceyear\ website (\texttt{https://ismir\conferenceyear.ismir.net}).
+A geração de música simbólica com redes neurais avançou rapidamente com os
+Transformers autoregressivos, hoje capazes de produzir piano expressivo com
+estrutura métrica coerente~\cite{Huang2019:musictransformer,Huang2020:remi}.
+Para servirem como ferramenta de composição, esses modelos também precisam
+aceitar controles de alto nível, e a emoção é um dos mais naturais para quem
+compõe ou escuta. Aqui, a emoção é descrita pelos quatro quadrantes do modelo
+circumplexo de Russell~\cite{Russell1980:circumplex}, que combina valência
+(positiva ou negativa) e arousal (alta ou baixa energia): Q1 (feliz), Q2
+(tensa), Q3 (triste) e Q4 (calma). A tarefa é gerar trechos de piano pop
+condicionados a um desses quadrantes.
 
-\section{Paper Length \& File Size}
+A forma mais comum de condicionar a geração é inserir um token de emoção na
+sequência e ajustar o modelo em dados rotulados. Hung et al.
+(2021)~\cite{Hung2021:emopia} mostram que as peças geradas dessa forma obtêm
+acurácia bem menor em um classificador de emoção do que as peças reais, o que
+sugere que elas não carregam a emoção pedida ou se afastam demais das peças
+reais para o classificador. O mesmo se observa no Transformer avaliado, que, com
+condicionamento simples, acerta o quadrante pretendido em apenas 34\,\% das
+amostras, segundo o classificador de emoção usado na avaliação.
 
-We adopt a ``\textbf{(6+n)-page policy}'' for ISMIR \conferenceyear. That is, each paper may have a maximum of six pages of technical content (including figures and tables), with additional optional pages that contain only references and optional acknowledgments, AI Usage Statement and Ethics Statement. \textbf{Note that acknowledgments should not be included in the anonymized submission.}
+Para reforçar a condição sem retreinar o modelo, aplica-se o
+\emph{classifier-free guidance} (CFG) aos \emph{logits} de cada token, como
+Sanchez et al. (2024)~\cite{Sanchez2024:cfg} fazem em modelos de linguagem.
+Durante o ajuste fino, o token de emoção é trocado aleatoriamente por um token
+reservado sem emoção, \texttt{<NULL>}, o mesmo usado em todo o pré-treino, de
+modo que o mesmo modelo aprende a gerar com e sem a condição. Na amostragem, as
+duas predições são combinadas a cada passo com um peso $\gamma$. Com
+$\gamma = 1$, recupera-se o condicionamento simples, e com $\gamma > 1$ a
+predição é extrapolada na direção da emoção pedida.
 
-Paper should be submitted as a PDF file. \textbf{The file size is limited to 10MB.} Please compress images and figures as necessary before submitting.
+Investiga-se, então, quanto o CFG aumenta a aderência à emoção, qual o custo em
+qualidade e diversidade, e se o efeito é diferente para valência e arousal. Os
+resultados mostram que o CFG aproxima a aderência do teto do classificador sem
+perda de qualidade, mas o ganho vem quase todo do arousal. A valência
+praticamente não muda, pois o modo maior ou menor das peças geradas não
+distingue os quadrantes em nenhum valor de $\gamma$.
 
-\section{Page Size}\label{sec:page_size}
+A principal contribuição deste trabalho é mostrar que o CFG, já usado em modelos
+de linguagem, também reforça o condicionamento por emoção na geração simbólica,
+sem custo de treino além do descarte aleatório da condição. Um Transformer
+decoder pré-treinado no Pop1k7 e ajustado no EMOPIA+ é avaliado em uma varredura
+de $\gamma$ entre 1 e 10 e comparado a uma LSTM e a uma cadeia de Markov. Outra
+contribuição é uma análise de atributos musicais das peças geradas, como
+densidade de notas, intensidade e modo, que permite localizar onde o
+condicionamento falha e indica o que tratar em trabalhos futuros.
 
-The proceedings will be printed on \underline{portrait A4-size paper} \underline{(21.0cm x 29.7cm)}. All material on each page should fit within a rectangle of 17.2cm x 25.2cm, centered on the page, beginning 2.0cm from the top of the page and ending with 2.5cm from the bottom. The left and right margins should be 1.9cm. The text should be in two 8.2cm columns with a 0.8cm gutter. All text must be in a two-column format. Text must be fully justified.
+% -----------------------------------------------
+\section{Trabalhos Relacionados}\label{sec:related}
 
-\section{Typeset Text}\label{sec:typeset_text}
+Huang et al. (2019)~\cite{Huang2019:musictransformer} propõem o
+\emph{Music Transformer}, que adapta o Transformer decoder à música simbólica
+com atenção relativa. Os autores reformulam o cálculo das posições relativas
+para que a memória cresça linearmente, e não quadraticamente, com o comprimento
+da sequência, o que viabiliza modelar peças de piano com coerência de longo
+prazo. Esse trabalho estabelece o decoder autoregressivo como base para a
+geração simbólica. O modelo proposto segue a mesma estrutura de decoder, mas com
+posições absolutas aprendidas em vez da atenção relativa e contexto fixo de 1024
+tokens; sequências mais longas são divididas em janelas que começam no início de
+um compasso.
 
-\subsection{Normal or Body Text}\label{subsec:body}
+Além da arquitetura, a representação dos eventos também influencia a geração.
+Huang \& Yang (2020)~\cite{Huang2020:remi} observam que a representação por
+\emph{time-shift} usada até então não explicita a métrica, de modo que o modelo
+precisa inferir onde caem os tempos e os compassos somando deslocamentos. Eles
+propõem a representação REMI, que substitui o \emph{time-shift} por tokens de
+compasso (\texttt{Bar}) e de posição dentro do compasso (\texttt{Position}),
+além de tokens de andamento e de acorde, e com ela o
+\emph{Pop Music Transformer} gera piano pop com estrutura rítmica melhor que a
+do Music Transformer. A REMI foi adotada, sem os tokens de acorde, porque a
+grade métrica explícita e os tokens de andamento e \emph{velocity} carregam
+justamente traços ligados ao arousal, como densidade de notas, andamento e
+intensidade.
 
-Please use a 10pt (point) Times font. Sans-serif or non-proportional fonts can be used only for special purposes, such as distinguishing source code text.
+Buscando sequências mais curtas, Hsiao et al. (2021)~\cite{Hsiao2021:cp} propõem
+o \emph{Compound Word Transformer}, que agrupa os tokens de um mesmo evento em
+uma palavra composta e prevê cada tipo de token com uma cabeça de saída própria,
+o que reduz o comprimento das sequências. O trabalho também introduz o Pop1k7,
+coleção de transcrições de piano pop usada aqui no pré-treino. Ao contrário do
+Compound Word Transformer, a abordagem proposta mantém os tokens no formato
+plano da REMI, um token por passo, de modo que o \emph{guidance} atua sobre uma
+única distribuição a cada passo da amostragem.
 
-The first paragraph in each section should not be indented, but all other paragraphs should be.
+No condicionamento por emoção, Hung et al. (2021)~\cite{Hung2021:emopia}
+apresentam o EMOPIA, conjunto de 1.087 trechos de piano pop anotados nos quatro
+quadrantes de valência e arousal. Como baseline de geração, os autores usam o
+Compound Word Transformer com um token de emoção, pré-treinado no Pop1k7 e
+ajustado no EMOPIA, e observam que o arousal é mais fácil de distinguir que a
+valência a partir de atributos simbólicos. A abordagem proposta parte do mesmo
+esquema de pré-treino e ajuste fino com token de emoção e investiga se o
+\emph{guidance} na amostragem reforça o efeito desse token.
 
-\subsection{Title and Authors}
+Huang et al. (2024)~\cite{Huang2024:emodisentanger} partem da constatação de que
+trabalhos anteriores controlam bem o arousal, mas não a valência, que depende
+sobretudo da tonalidade e do modo maior ou menor. Para contornar isso, propõem o
+\emph{EMO-Disentanger}, que separa a geração em dois estágios: o primeiro produz
+uma \emph{lead sheet} (melodia e acordes) condicionada à valência, e o segundo
+gera a performance condicionada ao arousal. A \emph{lead sheet} usa uma
+representação funcional, em que notas e acordes são codificados como graus
+relativos à tonalidade, tornando o modo maior ou menor explícito para o modelo.
+O trabalho também disponibiliza o EMOPIA+, com as tonalidades de 367 trechos
+corrigidas manualmente, que é a versão do EMOPIA usada nos experimentos. Essa
+dificuldade com a valência está diretamente relacionada aos resultados da
+Seção~\ref{sec:results}.
 
-The title is 14pt Times, bold, caps, upper case, centered. \textbf{Authors' names are omitted when submitting for double-blind reviewing.}
+Por fim, entre as técnicas que reforçam a condição apenas na inferência, Sanchez
+et al. (2024)~\cite{Sanchez2024:cfg} levam o \emph{classifier-free guidance}
+(CFG), proposto originalmente para modelos de difusão, a modelos de linguagem
+autoregressivos. A cada token, os \emph{logits} condicionados ao \emph{prompt} e
+os incondicionais são combinados para extrapolar na direção da condição, o que
+aumenta a aderência ao \emph{prompt} sem retreinar o modelo. A mesma formulação
+é aplicada aqui à geração simbólica, com o token de emoção no papel do
+\emph{prompt} e o token nulo no papel da predição incondicional.
 
-\subsection{First Page Copyright Notice}
+% -----------------------------------------------
+\section{Método}\label{sec:method}
 
-Please include the copyright notice exactly as it appears here in the lower left-hand corner of the page. It is set in 8pt Times.
+\subsection{Dados e Pré-processamento}
+% TODO
 
+\subsection{Representação}
+% TODO
 
-\subsection{Page Numbering, Headers and Footers}
+\subsection{Modelos}
+% TODO
 
-Do not include headers, footers or page numbers in your submission. These will be added when the publications are assembled.
+\subsection{Condicionamento e Amostragem}
+% TODO
 
-\subsection{Line Numbers}
+% -----------------------------------------------
+\section{Experimentos}\label{sec:experiments}
 
-\textbf{Line numbers should be included in your submitted manuscript,} for reference during reviewing.
+\subsection{Configuração Experimental}
+% TODO
 
-\section{First Level Headings}
+\subsection{Métricas e Protocolo}
+% TODO
 
-First-level headings are in Times 10pt bold, centered with 1 line of space above the section head, and 1/2 space below it. For a section header immediately followed by a subsection header, the space should be merged.
+% -----------------------------------------------
+\section{Resultados e Discussão}\label{sec:results}
 
-\subsection{Second Level Headings}
+\subsection{Treino e Validação}
+% TODO
 
-Second-level headings are in Times 10pt bold, flush left, with 1 line of space above the section head, and 1/2 space below it. The first letter of each significant word is capitalized.
+\subsection{Aderência e Custo do CFG}
+% TODO
 
-\subsubsection{Third and Further Level Headings}
+\subsection{Por que a Valência Não Responde}
+% TODO
 
-Third-level headings are in Times 10pt italic, flush left, with 1/2 line of space above the section head, and 1/2 space below it. The first letter of each significant word is capitalized. Using more than three levels of headings is highly discouraged.
+\subsection{Comparação com os Baselines}
+% TODO
 
-\section{Footnotes and Figures}
+\subsection{Análise Qualitativa}
+% TODO
 
-\subsection{Footnotes}
+% -----------------------------------------------
+\section{Conclusão e Trabalhos Futuros}\label{sec:conclusion}
+% TODO
 
-Indicate footnotes with a number in the text.\footnote{This is a footnote.} Use 8pt type for footnotes. Place the footnotes at the bottom of the page on which they appear. Precede the footnote with a 0.5pt horizontal rule.
-
-\subsection{Figures, Tables and Captions}
-
-All artwork must be centered, neat, clean, and legible. All lines should be very dark for purposes of reproduction and artwork should not be hand-drawn. While proceedings are generated in color, all figures must also make sense when printed out in grayscale. \textbf{Figure and table numbers and captions always appear below the figure.} Leave 1 line space between the figure or table and the caption. Each figure or table is numbered consecutively. Captions should be Times 10pt. Place tables/figures in text as close to the reference as possible. References to tables and figures should be capitalized, for example, see \figref{fig:example} and \tabref{tab:example}. Figures and tables may extend across both columns to a maximum width of 17.2cm.
-
-\textbf{To enhance accessibility, we strongly encourage the authors to adopt a color blind friendly color palette when making plots.} For Matplotlib users, the `tableau-colorblind10' and `petroff10' color palettes would be good options, which can be enabled by \texttt{plt.style.use('tableau-colorblind10')} and \texttt{plt.style.use('petroff10')}.
-
-\begin{table}
-  \centering
-  \begin{tabular}{|l|l|}
-    \hline
-    String value & Numeric value \\
-    \hline
-    Hello ISMIR  & \conferenceyear \\
-    \hline
-  \end{tabular}
-  \caption{Table captions should be placed below the table.}
-  \label{tab:example}
-\end{table}
-
-\begin{figure}
-  \centering
-  \includegraphics[alt={ISMIR 2025 template example image},width=0.9\linewidth]{example.png}
-  \caption{Figure captions should be placed below the figure.}
-  \label{fig:example}
-\end{figure}
-
-\section{Equations}
-
-Equations should be placed on separate lines and numbered. The number should be on the right side, in parentheses, as in \eqnref{relativity}.
-
-\begin{equation}\label{relativity}
-E=mc^{2}
-\end{equation}
-
-\section{Citations}
-
-All bibliographical references should be listed at the end of the submission, in a section named ``REFERENCES,'' numbered and in the order that they first appear in the text. Formatting in the REFERENCES section must conform to the IEEE standard (\url{https://ieeeauthorcenter.ieee.org/wp-content/uploads/IEEE-Reference-Guide.pdf}). Approved IEEE abbreviations (Proceedings $\rightarrow$ Proc.) may be used to shorten reference listings. All references listed should be cited in the text. When referring to documents, place the numbers in square brackets (e.g., \cite{ISMIR17Author:01} for a single reference, or \cite{JNMR10Someone:01,Book20Person:01,Chapter09Person:01} for a range).
-
-\textbf{As submission is double blind, refer to your own published work in the third person.} That is, use ``In the previous work of \cite{ISMIR17Author:01},'' not ``In our previous work \cite{ISMIR17Author:01}.'' If you cite your other papers that are not widely available (e.g., a journal paper under review), use anonymous author names in the citation, e.g., an author of the form ``A. Anonymous.''
-
-\section{Acknowledgments}
-
-You may include an optional Acknowledgments section in your camera-ready version to refer to any individuals or organizations that should be acknowledged in your paper. \textbf{Do not include the Acknowledgments section in your submitted manuscript.} The Acknowledgments section does \textit{not} count towards the page limit for scientific content.
-
-\section{AI Usage Statement}
-
-In line with the ISMIR 2026 AI Usage Policy, if you need to declare and explain the use of AI tools in the work described in the paper, you can do so by including a section titled ``AI Usage Statement" at the end of the paper. The AI Usage Statement section can be included both at submission time and in your camera-ready version. See the Call for Papers and Author Guidelines for more details. The AI Usage Statement section does \textit{not} count towards the page limit for scientific content. 
-
-\section{Ethics Statement}
-
-You may include an optional Ethics Statement section at the end of the paper to provide additional ethical considerations related to your paper. The Ethics Statement section can be included both at submission time and in your camera-ready version. See the Call for Papers and Submission Guidelines for details. The Ethics Statement section does \textit{not} count towards the page limit for scientific content.
-
-\section{Camera Ready Preparation}\label{sec:cameraready}
-
-\textbf{The camera-ready version should include the names, affiliations and email addresses of the authors.} Authors' names are centered. The lead author's name is to be listed first (left-most), and the co-authors' names after. If the addresses for all authors are the same, include the address only once, centered. If the authors have different addresses, put the addresses, evenly spaced, under each authors' name. To display the author information in \LaTeX, please remove the global option `submission' when importing the `ismir' package (i.e., \texttt{\textbackslash usepackage\{ismir\}} in line 16).
-
-\textbf{Please make sure that the author names, paper title and proceedings title are shown correctly in the copyright notice.} For \LaTeX\ users, the proceedings title will be automatically loaded when you remove the global option `submission' when importing the `ismir' package (i.e., \texttt{\textbackslash usepackage\{ismir\}} in line 16). For Word users, you will need to manually replace ``submitted to \textit{ISMIR}, 2026'' to ``in \textit{Proc. of the 27th Int. Society for Music Information Retrieval Conf.}, Abu Dhabi, UAE, 2026.''
-
-\textbf{You must also remove all line numbers from the final camera-ready version.} This can be done in \LaTeX\ by removing the global option `submission' when importing the ismir package (i.e., \texttt{\textbackslash usepackage\{ismir\}} in line 16). This can be done in Microsoft Word by selecting ``Layout > Line Numbers > None.''
-
-% For BibTeX users:
+% -----------------------------------------------
 \bibliography{ISMIRtemplate}
-
-% For non BibTeX users:
-%\begin{thebibliography}{citations}
-% \bibitem{Author:17}
-% E.~Author and B.~Authour, ``The title of the conference paper,'' in {\em Proc.
-% of the Int. Society for Music Information Retrieval Conf.}, (Suzhou, China),
-% pp.~111--117, 2017.
-%
-% \bibitem{Someone:10}
-% A.~Someone, B.~Someone, and C.~Someone, ``The title of the journal paper,''
-%  {\em Journal of New Music Research}, vol.~A, pp.~111--222, September 2010.
-%
-% \bibitem{Person:20}
-% O.~Person, {\em Title of the Book}.
-% \newblock Montr\'{e}al, Canada: McGill-Queen's University Press, 2021.
-%
-% \bibitem{Person:09}
-% F.~Person and S.~Person, ``Title of a chapter this book,'' in {\em A Book
-% Containing Delightful Chapters} (A.~G. Editor, ed.), pp.~58--102, Tokyo,
-% Japan: The Publisher, 2009.
-%
-%\end{thebibliography}
 
 \end{document}
