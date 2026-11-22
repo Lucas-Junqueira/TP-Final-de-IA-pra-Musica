@@ -202,16 +202,104 @@ aumenta a aderência ao \emph{prompt} sem retreinar o modelo. A mesma formulaç�
 \section{Método}\label{sec:method}
 
 \subsection{Dados e Pré-processamento}
-% TODO
+
+O ajuste fino e a avaliação usam o EMOPIA+~\cite{Huang2024:emodisentanger}, com
+a partição oficial por trecho em treino, validação e teste. Verifica-se que
+nenhuma música aparece em mais de uma partição, já que trechos da mesma música
+compartilham material, e o teste é usado apenas na avaliação final. Como o
+EMOPIA+ tem apenas 1.071 trechos, o modelo é primeiro pré-treinado no
+Pop1k7~\cite{Hsiao2021:cp}, do mesmo gênero e instrumento, mas sem rótulos de
+emoção. O Pop1k7 é dividido por música em 95\,\% para treino e 5\,\% para
+validação, sem partição de teste.
+
+Como os dois conjuntos são de piano pop, uma mesma música pode aparecer em ambos
+com identificadores diferentes. Para evitar vazamento, cada trecho do EMOPIA+ é
+comparado às peças do Pop1k7 por conteúdo, com n-gramas de acordes, que
+identificam a mesma transcrição, e de intervalos da melodia, que identificam a
+mesma música em outro arranjo. A única peça do Pop1k7 que coincide com trechos
+do teste é removida do pré-treino.
+
+Todas as peças dos dois conjuntos estão em compasso 4/4, o que é exigido pela
+grade de posições da representação, e as trilhas de cada peça são fundidas em
+uma única trilha de piano. No treino, cada exemplo é uma janela de até 1024
+tokens que começa em um compasso sorteado, para ficar alinhada à grade métrica,
+e é transposta aleatoriamente em até $\pm 3$ semitons. A transposição aumenta a
+variedade de tonalidades sem alterar o modo maior ou menor, ligado à valência, e
+mantém as notas dentro da extensão do piano. Na validação, as peças são
+divididas em janelas fixas, também cortadas no início de compassos e sem
+transposição.
 
 \subsection{Representação}
-% TODO
+
+As peças são codificadas em REMI~\cite{Huang2020:remi} com o
+MidiTok~\cite{Fradet2021:miditok}, sem tokens de acorde. Cada compasso tem 16
+posições, as alturas cobrem as 88 teclas do piano (MIDI 21 a 108), a
+\emph{velocity} é quantizada em 16 níveis e o andamento em 32 valores entre 40 e
+250 BPM. Cada nota é descrita por uma trinca de tokens de altura,
+\emph{velocity} e duração, agrupada sob o token da posição em que começa, como
+na Figura~\ref{fig:remi}. Com os tokens especiais, o vocabulário tem 193 tokens.
+Cada sequência tem a forma \texttt{<BOS>}, condição, eventos e \texttt{<EOS>},
+em que a condição é um dos tokens \texttt{<Q1>} a \texttt{<Q4>} ou o token
+\texttt{<NULL>}.
+
+\begin{figure}[t]
+  \centering
+  \fbox{\parbox{0.95\columnwidth}{\raggedright\footnotesize\ttfamily
+      Bar\_None Position\_0 Tempo\_121.29 Pitch\_60 Velocity\_79 Duration\_2.0.4
+      Pitch\_64 Velocity\_79 Duration\_2.0.4 Pitch\_67 Velocity\_79
+      Duration\_2.0.4 Position\_8 Pitch\_72 Velocity\_95 Duration\_1.0.4}}
+  \caption{Um compasso em REMI, com um acorde de Dó maior no primeiro tempo e um
+    Dó agudo no terceiro.}
+  \label{fig:remi}
+\end{figure}
 
 \subsection{Modelos}
-% TODO
+
+O modelo principal é um Transformer decoder~\cite{Vaswani2017:attention} com 6
+camadas, dimensão 256, 8 cabeças de atenção e camada \emph{feed-forward} de
+dimensão 1024. A normalização é aplicada antes de cada subcamada (pré-LN), as
+posições são absolutas e aprendidas, e as camadas de entrada e de saída
+compartilham os pesos. Com contexto de 1024 tokens, o modelo tem 5,05 milhões de
+parâmetros. Na geração, as chaves e os valores da atenção são mantidos em cache,
+para que o prefixo não seja recalculado a cada passo.
+
+São usados dois baselines. O primeiro é uma LSTM~\cite{Hochreiter1997:lstm} de 2
+camadas com 512 unidades e 4,40 milhões de parâmetros, treinada com o mesmo
+pré-treino, ajuste fino e descarte da condição. O tamanho foi escolhido para
+ficar na mesma ordem de grandeza do Transformer, de modo que a comparação
+reflita a arquitetura, e não o número de parâmetros. O segundo é uma cadeia de
+Markov de ordem 4 sobre os tokens REMI, com uma cadeia por quadrante estimada no
+treino do EMOPIA+, que serve de referência sem aprendizado profundo e mostra o
+que se obtém apenas reproduzindo padrões locais do treino. Quando um contexto de
+ordem 4 não foi visto no treino, a cadeia usa o maior contexto mais curto que já
+apareceu, até a ordem 0.
 
 \subsection{Condicionamento e Amostragem}
-% TODO
+
+No pré-treino, a condição é sempre \texttt{<NULL>}, pois o Pop1k7 não tem
+rótulos de emoção. No ajuste fino, o token do quadrante é trocado por
+\texttt{<NULL>} com probabilidade 0,15, como no descarte de condição proposto
+para modelos de difusão~\cite{Ho2021:cfg}. Assim, o mesmo modelo produz os
+\emph{logits} condicionais $\ell_{Q_k}$, com o token do quadrante $Q_k$, e os
+incondicionais $\ell_{\text{NULL}}$, com o token nulo. Na amostragem, os dois
+são combinados como em Sanchez et al.~\cite{Sanchez2024:cfg}:
+\begin{equation}
+  \ell = \ell_{\text{NULL}} + \gamma\,\bigl(\ell_{Q_k} -
+  \ell_{\text{NULL}}\bigr).
+  \label{eq:cfg}
+\end{equation}
+Com $\gamma = 1$, a Equação~\ref{eq:cfg} se reduz ao condicionamento simples, e
+com $\gamma > 1$ a distribuição é empurrada na direção do quadrante pedido.
+Quando $\gamma > 1$, as duas predições são calculadas em paralelo no mesmo lote,
+o que dobra o custo de inferência a cada passo. A combinação é feita diretamente
+sobre os \emph{logits}, sem reescalonamento.
+
+Depois do CFG, os \emph{logits} passam por temperatura 1,0 e amostragem top-p
+com $p = 0{,}95$~\cite{Holtzman2020:topp}. Depois do prefixo, o único token
+especial permitido é o \texttt{<EOS>}, e a geração termina nele ou ao completar
+32 compassos. Quando o contexto enche, o cache é refeito com o prefixo e os
+últimos 512 tokens gerados. Na conversão para MIDI, tokens REMI fora de ordem
+são descartados. Os três sistemas usam a mesma temperatura e o mesmo top-p.
 
 % -----------------------------------------------
 \section{Experimentos}\label{sec:experiments}

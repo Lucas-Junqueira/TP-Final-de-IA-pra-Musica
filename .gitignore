@@ -22,6 +22,10 @@ dist/
 .DS_Store
 Thumbs.db
 
+# Downloaded datasets and generated tokens (see Data/download.sh)
+Data/raw/
+Data/tokens/
+
 # Model checkpoints
 *.pt
 *.pth
