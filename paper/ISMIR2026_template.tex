@@ -18,7 +18,7 @@
 \usepackage{graphicx}
 \usepackage{color}
 
-\graphicspath{{../results/figures/}}
+\graphicspath{{figures/}{../results/figures/}}
 
 % Title. Please use IEEE-compliant title case when specifying the title here,
 % as it has implications for the copyright notice
@@ -305,32 +305,283 @@ são descartados. Os três sistemas usam a mesma temperatura e o mesmo top-p.
 \section{Experimentos}\label{sec:experiments}
 
 \subsection{Configuração Experimental}
-% TODO
+
+O Transformer e a LSTM são treinados com AdamW~\cite{Loshchilov2019:adamw}
+(\emph{weight decay} de 0,01), lotes de 16 janelas, \emph{dropout} de 0,1,
+\emph{gradient clipping} em 1,0 e precisão mista bf16. O pré-treino usa taxa de
+aprendizado $3 \cdot 10^{-4}$, com 1.000 passos de aquecimento linear e
+decaimento cosseno até 10\,\% do valor inicial, por até 20.000 passos (cerca de
+35 épocas). O ajuste fino parte do melhor ponto do pré-treino e usa taxa
+$10^{-4}$, 200 passos de aquecimento e até 5.000 passos (cerca de 55 épocas). Em
+ambas as fases, a validação é feita a intervalos regulares e o treino para
+depois de 5 avaliações sem melhora, mantendo o melhor ponto. Todo o treino roda
+em uma única GPU RTX 3050 Laptop de 4\,GB: o pré-treino e o ajuste fino levam
+51 e 19 minutos para o Transformer e 62 e 14 minutos para a LSTM.
+
+Cada sistema gera 100 trechos por quadrante, 400 no total, com a mesma semente,
+temperatura e top-p. O Transformer é avaliado com
+$\gamma \in \{1;\,1{,}5;\,2;\,3;\,5\}$ e, para procurar o ponto em que a
+qualidade se degrada, também com $\gamma \in \{8;\,10\}$. A cadeia de Markov e
+a LSTM são amostradas sem CFG.
 
 \subsection{Métricas e Protocolo}
-% TODO
+
+\textbf{Aderência à emoção.} A métrica principal é a acurácia de um
+classificador de emoção treinado apenas no treino do EMOPIA+, com a mesma
+transposição aleatória do gerador e seleção de modelo pela validação. O
+classificador é um Transformer encoder de 4 camadas e dimensão 256 que lê
+janelas de 512 tokens, sem o token de condição, e faz a média das
+probabilidades sobre as janelas de cada peça. No teste humano, ele acerta
+58,0\,\% em 4 classes, 69,3\,\% na valência (Q1+Q4 contra Q2+Q3) e 84,1\,\% no
+arousal (Q1+Q2 contra Q3+Q4). Esses valores são tratados como o teto que um
+gerador pode atingir de forma legítima. Para cada sistema são reportadas as três
+acurácias, com intervalos de Wilson de 95\,\%~\cite{Wilson1927:ci} e teste de
+duas proporções contra $\gamma = 1$.
+
+\textbf{Qualidade.} Seguindo Yang \& Lerch~\cite{Yang2020:eval}, seis métricas
+do MusPy~\cite{Dong2020:muspy} (\emph{pitch range}, \emph{pitch class entropy},
+\emph{scale consistency}, \emph{polyphony}, \emph{empty beat rate} e
+\emph{groove consistency}) são calculadas nos primeiros 16 compassos de cada
+trecho, já que os trechos humanos têm cerca de 14. Para cada métrica e cada
+quadrante, as distribuições geradas e as do teste humano do mesmo quadrante são
+estimadas por KDE e comparadas pela área de sobreposição (OA, maior é melhor) e
+pela divergência KL do humano para o gerado (menor é melhor), em seguida
+promediadas. Como referência, o treino humano contra o teste humano obtém
+OA de 0,847 e KL de 0,122.
+
+\textbf{Diversidade, memorização e perplexidade.} A diversidade é a distância
+média de variação total entre os histogramas de classes de altura de todos os
+pares de trechos de um mesmo quadrante. A memorização é a fração de n-gramas de
+16 tokens de cada trecho que aparecem exatamente no treino do EMOPIA+ ou do
+Pop1k7, junto com o maior trecho copiado contínuo. A perplexidade é medida no
+teste do EMOPIA+ com o token de emoção correto e com \texttt{<NULL>}.
+
+\textbf{Atributos musicais.} Para explicar os resultados de aderência, são
+medidos por quadrante a densidade (notas por compasso), a \emph{velocity}
+média, o andamento, a duração média das notas e a fração de trechos em modo
+menor, estimado pela correlação do histograma de classes de altura com os
+perfis de Krumhansl-Kessler~\cite{Krumhansl1982:keys} das 24 tonalidades.
 
 % -----------------------------------------------
 \section{Resultados e Discussão}\label{sec:results}
 
+\begin{table*}[t]
+  \centering
+  \small
+  \begin{tabular}{lccccccc}
+    \hline
+    Sistema & 4 classes & Valência & Arousal & OA $\uparrow$ & KL $\downarrow$ &
+    Diversidade & Cópia (\%) \\
+    \hline
+    Teste humano (teto)            & 0,580 & 0,693 & 0,841 & 0,847$^*$ & 0,12$^*$ & 0,525 & 0,9 \\
+    Markov (ordem 4)               & \textbf{0,860} & 0,880 & 0,973 & 0,480 & 2,10 & 0,233 & 6,6 \\
+    LSTM                           & 0,403 & 0,510 & 0,790 & \textbf{0,717} & \textbf{0,66} & 0,538 & 0,3 \\
+    Transformer, $\gamma = 1$      & 0,340 & 0,562 & 0,615 & 0,670 & 0,90 & 0,640 & 0,6 \\
+    Transformer, $\gamma = 1{,}5$  & 0,372 & 0,545 & 0,688 & 0,672 & 0,75 & 0,639 & 0,6 \\
+    Transformer, $\gamma = 2$      & 0,438 & 0,580 & 0,738 & 0,666 & 0,82 & 0,642 & 0,6 \\
+    Transformer, $\gamma = 3$      & 0,463 & 0,588 & 0,797 & 0,677 & 0,81 & 0,648 & 0,6 \\
+    Transformer, $\gamma = 5$      & 0,557 & 0,618 & 0,905 & 0,687 & 0,70 & 0,640 & 0,6 \\
+    Transformer, $\gamma = 8$      & 0,555 & 0,600 & 0,935 & 0,677 & 0,89 & 0,641 & 0,5 \\
+    Transformer, $\gamma = 10$     & 0,583 & 0,623 & 0,955 & 0,678 & 1,02 & 0,623 & 0,5 \\
+    \hline
+  \end{tabular}
+  \caption{Resultados com 400 trechos por sistema. As três primeiras colunas
+    são acurácias do classificador de emoção; OA e KL são médias sobre as seis
+    métricas e os quatro quadrantes; a diversidade é a distância média entre
+    histogramas de classes de altura; a cópia é a fração de 16-gramas presentes
+    no treino. $^*$Treino humano contra teste humano.}
+  \label{tab:main}
+\end{table*}
+
 \subsection{Treino e Validação}
-% TODO
+
+A Figura~\ref{fig:loss} mostra as curvas de perda. O Transformer fica abaixo da
+LSTM nas duas fases e atinge perplexidade de validação de 3,48 no Pop1k7 e de
+3,45 no EMOPIA+, contra 4,35 e 4,56 da LSTM. No ajuste fino, a validação do
+Transformer estabiliza por volta do passo 2.000, enquanto o treino continua
+caindo, e o melhor ponto é o do passo 4.400. No pré-treino, as curvas ainda
+desciam ao fim dos 20.000 passos.
+
+No teste do EMOPIA+, a perplexidade é de 3,59 para o Transformer e de 4,69 para
+a LSTM. Os modelos apenas pré-treinados chegam a 18,7 e 22,7, o que mostra a
+distância entre os dois conjuntos e a importância do ajuste fino. Um resultado
+revelador é que a perplexidade do Transformer com o token de emoção correto
+(3,588) é praticamente igual à obtida com \texttt{<NULL>} (3,590): a emoção
+quase não altera a previsão de cada token, que depende sobretudo do contexto
+local. O efeito da condição é pequeno token a token e se acumula ao longo da
+sequência, o que antecipa por que o condicionamento simples é fraco e por que o
+CFG, que amplifica justamente a diferença entre as duas predições, precisa de
+valores altos de $\gamma$.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{fig3_loss_curves}
+  \caption{Perda de treino e validação no pré-treino (Pop1k7) e no ajuste fino
+    (EMOPIA+).}
+  \label{fig:loss}
+\end{figure}
 
 \subsection{Aderência e Custo do CFG}
-% TODO
+
+A Tabela~\ref{tab:main} e a Figura~\ref{fig:tradeoff} resumem o efeito de
+$\gamma$. Sem CFG, o Transformer acerta o quadrante em apenas 34,0\,\% dos
+trechos, abaixo até da LSTM (40,3\,\%). A acurácia cresce quase monotonicamente
+com $\gamma$ e chega a 55,7\,\% em $\gamma = 5$ (IC de 51\,\% a 61\,\%), perto
+do teto de 58,0\,\%. A diferença para $\gamma = 1$ já é significativa em
+$\gamma = 2$ ($p = 0{,}005$) e muito forte em $\gamma = 5$ ($p < 10^{-9}$). A
+partir daí o ganho satura: $\gamma = 8$ e $\gamma = 10$ obtêm 55,5\,\% e
+58,3\,\%, sem diferença significativa para $\gamma = 5$.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{fig1_tradeoff}
+  \caption{Aderência (acurácia em 4 classes) contra qualidade (OA médio) para
+    cada sistema. As linhas tracejadas marcam o teto do classificador e o OA do
+    treino humano contra o teste humano.}
+  \label{fig:tradeoff}
+\end{figure}
+
+Até $\gamma = 5$, esse ganho não tem custo mensurável. O OA médio fica entre
+0,666 e 0,687, até subindo um pouco, a diversidade permanece em 0,64 e a
+fração de 16-gramas copiados do treino continua em 0,6\,\%, abaixo dos 0,9\,\%
+do próprio teste humano. Com CFG, cada quadrante adquire um perfil próprio, mais
+próximo do quadrante humano correspondente.
+
+Em $\gamma = 8$ e $\gamma = 10$ surgem sinais leves de degradação. O KL médio
+sobe de 0,70 para 1,02, puxado sobretudo pelo \emph{empty beat rate}, cujo OA cai
+de 0,68 para 0,48: os quadrantes calmos passam a ter mais tempos vazios do que os
+trechos humanos. A taxa de tokens REMI descartados na conversão para MIDI, ainda
+pequena, aumenta cerca de 7 vezes (de 0,013\,\% para 0,096\,\%), e a diversidade
+cai de 0,640 para 0,623. Como outras métricas, como \emph{scale consistency} e
+\emph{polyphony}, melhoram ao mesmo tempo, o OA médio fica estável. O
+compromisso entre aderência e qualidade existe, portanto, mas é fraco e só
+aparece depois que a aderência já saturou, o que faz de $\gamma \approx 5$ a
+melhor escolha.
 
 \subsection{Por que a Valência Não Responde}
-% TODO
+
+A Figura~\ref{fig:va} separa a aderência nos dois eixos. A acurácia de arousal
+sobe de 61,5\,\% para 90,5\,\% em $\gamma = 5$ ($p < 10^{-20}$) e chega a
+95,5\,\% em $\gamma = 10$, acima do teto humano de 84,1\,\%. A de valência
+passa apenas de 56,2\,\% para 61,8\,\%, diferença não significativa
+($p = 0{,}11$), e fica sempre abaixo do teto de 69,3\,\%. As matrizes de
+confusão mostram o mesmo padrão: em $\gamma = 10$, quase nenhum trecho pedido
+como agitado (Q1 ou Q2) é classificado como calmo, e vice-versa, mas 96 dos 100
+trechos pedidos como Q1 são classificados como Q2, e os pedidos como Q3 se
+dividem entre Q3 (48) e Q4 (36). O acerto em Q1 até cai, de 11\,\% para 4\,\%,
+porque o CFG torna esses trechos mais agitados sem torná-los mais alegres. Parte
+dessa confusão vem do próprio classificador, que acerta só 32\,\% do Q1 humano,
+mas a análise de atributos, que não depende dele, confirma o padrão.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{fig2_valence_arousal}
+  \caption{Acurácia de valência, arousal e 4 classes em função de $\gamma$, com
+    IC de 95\,\%. As linhas tracejadas são os tetos medidos no teste humano.}
+  \label{fig:va}
+\end{figure}
+
+\begin{figure*}[t]
+  \centering
+  \includegraphics[width=\textwidth]{fig4_attributes}
+  \caption{Atributos musicais por quadrante pedido em função de $\gamma$ (linhas
+    cheias) e no teste humano (linhas tracejadas). Os atributos ligados ao
+    arousal se separam com $\gamma$; a fração em modo menor não.}
+  \label{fig:attr}
+\end{figure*}
+
+A Figura~\ref{fig:attr} mostra o que o CFG muda na música. Em $\gamma = 1$, os
+quatro quadrantes são parecidos, com 23 a 30 notas por compasso,
+\emph{velocity} média entre 62 e 73 e andamento entre 105 e 113 BPM. À medida
+que $\gamma$ cresce, Q1 e Q2 ficam mais densos, mais fortes, mais rápidos e com
+notas mais curtas, e Q3 e Q4 mais esparsos, mais suaves e com notas mais longas.
+Em $\gamma = 5$, a \emph{velocity} (80, 86, 56 e 52 de Q1 a Q4) já separa os
+quadrantes agitados dos calmos como no teste humano (80, 70, 57 e 59); em $\gamma \geq 8$, os valores ultrapassam os
+humanos, e Q2 chega a 39 notas por compasso contra 23 nos trechos reais. Esse
+exagero explica a acurácia de arousal acima do teto: o classificador recebe
+trechos mais agitados do que qualquer peça real.
+
+A fração em modo menor, por outro lado, não responde ao CFG. No teste humano,
+ela separa bem os quadrantes: 0,16 em Q1, 0,74 em Q2, 0,43 em Q3 e 0,17 em Q4.
+Nos trechos gerados, fica entre 0,24 e 0,42 em todos os quadrantes e em todos os
+valores de $\gamma$, sem tendência. O modelo não aprendeu a associar o modo à
+emoção, e o CFG só pode amplificar a diferença entre as predições condicional e
+incondicional que o modelo já produz. Esse resultado é coerente com a observação
+de que o arousal é mais fácil de capturar a partir de atributos
+simbólicos~\cite{Hung2021:emopia} e com a motivação do
+EMO-Disentanger~\cite{Huang2024:emodisentanger}, que torna o modo explícito na
+representação justamente para controlar a valência. Possíveis causas, não
+testadas aqui, são o tamanho reduzido do EMOPIA+, o fato de o modo depender de
+relações entre notas ao longo de vários compassos, enquanto densidade e
+intensidade aparecem em qualquer trecho local, e a diluição da atenção ao token
+de emoção, que aparece só no início da sequência.
 
 \subsection{Comparação com os Baselines}
-% TODO
+
+A LSTM tem a melhor qualidade entre os sistemas gerados (OA de 0,717 e KL de
+0,66), um pouco acima do Transformer, apesar da perplexidade pior. As métricas do
+MusPy avaliam estatísticas globais, e a LSTM reproduz melhor as distribuições de
+altura e de ritmo, enquanto o Transformer gera mais polifonia do que os trechos
+humanos (OA de \emph{polyphony} de 0,54). Em aderência, a LSTM supera o
+Transformer sem CFG, mas fica bem abaixo dele com $\gamma \geq 2$.
+
+A cadeia de Markov obtém a maior aderência de todas, 86,0\,\% em 4 classes, acima
+do teto humano, e a pior qualidade, com OA de 0,480. Como cada quadrante tem a
+sua própria cadeia, os atributos locais reproduzem quase exatamente os do
+quadrante: Q1 tem 21 notas por compasso contra 22 no humano, e Q3 tem 14 contra
+15. O classificador se apoia nesses traços, mas as peças misturam escalas
+incompatíveis (OA de 0,13 em \emph{pitch class entropy} e de 0,11 em
+\emph{scale consistency}), têm a menor diversidade (0,233) e copiam o treino:
+6,6\,\% dos 16-gramas vêm do EMOPIA+, com cópias contínuas de até 72 tokens,
+enquanto nenhum trecho do Transformer passa de 24 tokens copiados. O Markov
+mostra, de forma extrema, que a aderência medida por um classificador precisa
+ser lida junto com a qualidade, e o mesmo cuidado vale para o arousal acima do
+teto obtido com $\gamma$ alto.
 
 \subsection{Análise Qualitativa}
-% TODO
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{pianoroll_transformer_g5}
+  \caption{Primeiros 8 compassos do primeiro trecho gerado para cada quadrante,
+    com $\gamma = 5$.}
+  \label{fig:roll}
+\end{figure}
+
+A Figura~\ref{fig:roll} mostra o primeiro trecho gerado para cada quadrante com
+$\gamma = 5$, sem seleção manual. O trecho de Q2 tem notas agudas repetidas sobre
+um baixo insistente, um padrão denso e obstinado, enquanto o de Q3 começa
+esparso, com acordes longos, e só depois ganha uma linha aguda. Q1 tem textura
+cheia e movimento na região média, e Q4 é uma sequência de acordes sustentados
+que mudam a cada compasso, como em uma balada. Os quadrantes são distintos em
+densidade e duração, mas não em harmonia: Q1 não soa claramente mais maior que
+Q2, o que é coerente com a análise de modo. Os áudios de dois trechos por
+quadrante de cada sistema e do teste humano, sintetizados com FluidSynth e o
+\emph{soundfont} MuseScore General, estão no repositório do projeto, em
+\texttt{samples/audio}.
 
 % -----------------------------------------------
 \section{Conclusão e Trabalhos Futuros}\label{sec:conclusion}
-% TODO
+
+Este trabalho mostrou que o \emph{classifier-free guidance}, aplicado apenas na
+amostragem, reforça o condicionamento por emoção em um Transformer de piano pop.
+Com $\gamma = 5$, a acurácia em 4 classes sobe de 34\,\% para 56\,\%, perto do
+teto do classificador, sem custo de qualidade, diversidade ou memorização; com
+valores maiores, a aderência satura e surgem sinais leves de degradação. O ganho,
+no entanto, vem quase todo do arousal. A análise de atributos mostra que o CFG
+amplifica densidade, intensidade, andamento e duração das notas, mas não altera
+o modo, que no modelo não se associa à emoção. O CFG reforça o que o modelo já
+aprendeu, mas não supre o que ele não aprendeu.
+
+O estudo tem limitações. A aderência é medida por um classificador que acerta
+58\,\% no teste humano, com apenas 88 trechos, e tanto a cadeia de Markov quanto o
+CFG com $\gamma$ alto mostram que um gerador pode explorar os traços em que o
+classificador se apoia. Os modelos foram treinados com uma única semente. Como trabalhos futuros, propõe-se um teste de audição com modelo,
+baselines e peças humanas, para verificar se a emoção percebida acompanha o
+classificador; condicionar explicitamente a tonalidade ou o modo, como no
+EMO-Disentanger~\cite{Huang2024:emodisentanger}; usar pesos de \emph{guidance}
+separados para valência e arousal; e repetir o token de emoção ao longo da
+sequência para reduzir a diluição da condição.
 
 % -----------------------------------------------
 \bibliography{ISMIRtemplate}
