@@ -181,3 +181,12 @@ O script grava `samples/audio/<sistema>/Q{k}_{i}.flac`, com o MIDI correspondent
 - [EMOPIA+](https://zenodo.org/records/13122742) (CC BY-NC-SA 4.0).
 - [Pop1k7](https://zenodo.org/records/13167761), do *Compound Word Transformer*.
 - Os dados não são versionados; baixe-os com `Data/download.sh`.
+
+## Integrantes
+
+- Cecília Junqueira V. M. Pereira
+- Daniel Barreto Torres
+- Erik Soares de Souza
+- Felipe Lopes Gomide
+- Leonardo Romano Andrade
+- Lucas Junqueira Carvalhido
