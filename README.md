@@ -15,8 +15,6 @@ O estudo mede como o **classifier-free guidance (CFG)**, aplicado só na amostra
 
 > **Pergunta de pesquisa:** quanto o CFG aumenta a aderência à emoção, quanto isso custa em qualidade e diversidade, e o efeito é diferente para valência e arousal?
 
-Explicação detalhada de cada componente, do treino e do CFG: [`IMPLEMENTACAO.md`](IMPLEMENTACAO.md).
-
 ---
 
 ## Resultados principais
