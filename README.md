@@ -180,6 +180,17 @@ O script grava `samples/audio/<sistema>/Q{k}_{i}.flac`, com o MIDI correspondent
 - [Pop1k7](https://zenodo.org/records/13167761), do *Compound Word Transformer*.
 - Os dados não são versionados; baixe-os com `Data/download.sh`.
 
+## Uso de IA
+
+Ferramentas de IA generativa foram usadas como apoio neste trabalho, para:
+
+- revisão dos textos escritos;
+- documentação do código;
+- pesquisa de informações;
+- correção de bugs.
+
+Todo o conteúdo produzido com apoio de IA foi revisado e validado pelos integrantes do grupo.
+
 ## Integrantes
 
 - Cecília Junqueira V. M. Pereira
